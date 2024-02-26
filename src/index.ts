@@ -7,16 +7,18 @@ import dotenv from 'dotenv';
 import { parseNestedJson, stringifyNestedJson } from './utils/json-parser';
 import { controllerFactory } from './factories/controller.factory';
 import { initDb } from './simple-db/init';
+import { websocketService } from './services/websocket.service';
 
 const config = dotenv.config({ path: `.env.ws` });
 const port = Number(config.parsed?.PORT) || 3000;
 initDb();
+const wsService = websocketService();
 
-export const httpServer = http.createServer(function(req, res) {
+export const httpServer = http.createServer(function (req, res) {
   const __dirname = path.resolve(path.dirname(''));
   const file_path =
     __dirname + (req.url === '/' ? '/front/index.html' : '/front' + req.url);
-  fs.readFile(file_path, function(err, data) {
+  fs.readFile(file_path, function (err, data) {
     if (err) {
       res.writeHead(404);
       res.end(JSON.stringify(err));
@@ -31,9 +33,9 @@ const wss = new WebSocketServer({ port });
 
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
-    const userCtrl = controllerFactory(
-      ws,
-    ).userController;
+    const userCtrl = controllerFactory(ws, wsService).userController;
+    const roomCtrl = controllerFactory(ws, wsService).roomController;
+
     const msg = parseNestedJson(message);
     console.log(msg);
 
@@ -44,10 +46,22 @@ wss.on('connection', function connection(ws) {
         // @ts-ignore
         ws.send(stringifyNestedJson(data));
       });
+      roomCtrl()
+        .then((data) => data?.getRooms())
+        .then((resp) => {
+          // @ts-ignore
+          ws.send(JSON.stringify(resp));
+        });
     }
 
-    if(msg.type == 'create_room') {
-
+    if (msg.type == 'create_room') {
+      roomCtrl()
+        .then((data) => data?.createRoom())
+        .then((resp) => {
+          const response = JSON.stringify(resp);
+          console.log('sending --> : %s', response);
+          ws.send(response);
+        });
     }
   });
 

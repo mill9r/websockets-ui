@@ -5,11 +5,21 @@ import { generateUUID } from '../utils/uuid-generator';
 import { createChain } from '../utils/error.handler';
 import { handleWrongPassword } from '../utils/user-error.handler';
 import WebSocket from 'ws';
+import { roomController } from '../controllers/room.controller';
+import { roomDao } from '../dao/room.dao';
+import { websocketService } from '../services/websocket.service';
+import { Create, Read } from '../interfaces/crud.interfaces';
 
-export const controllerFactory = (ws: WebSocket) => ({
+export const controllerFactory = (
+  ws: WebSocket,
+  webSocketService: Read<WebSocket, string> &
+    Create<{ ws: WebSocket; userId: string }, boolean>,
+) => ({
   userController: userController(
     userService(userDao(generateUUID)),
     createChain(handleWrongPassword),
     ws,
+    webSocketService,
   ),
+  roomController: roomController(roomDao(generateUUID), ws, webSocketService),
 });

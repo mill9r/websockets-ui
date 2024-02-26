@@ -4,7 +4,7 @@ import {
   DaoUserNotExistError,
 } from '../exceptions/dao.exceptions';
 import { Database } from '../simple-db/simple-db';
-import { DB_TABLE } from '../constants/db-table.constant';
+import { DB_TABLE, TABLE_PRIMARY_KEYS } from '../constants/db-table.constant';
 
 const isUserExist = (id: string, users: Map<string, User>) => {
   if (!users.has(id)) {
@@ -12,7 +12,11 @@ const isUserExist = (id: string, users: Map<string, User>) => {
   }
 };
 
-const getUserName = (name: string, password: string, users: Map<string, User>) => {
+const getUserName = (
+  name: string,
+  password: string,
+  users: Map<string, User>,
+) => {
   const user = Database.getTable(DB_TABLE.users).select(
     (row) => row.name === name,
   ) as unknown as User[];
@@ -24,11 +28,12 @@ const getUserName = (name: string, password: string, users: Map<string, User>) =
   return user[0];
 };
 
-
 const selectUserById = (id: string) => {
-  return (Database.getTable(DB_TABLE.users).select(
-    (row) => row.id === id,
-  ) as unknown as User[])[0];
+  return (
+    Database.getTable(DB_TABLE.users).select(
+      (row) => row[TABLE_PRIMARY_KEYS.userId] === id,
+    ) as unknown as User[]
+  )[0];
 };
 
 export { isUserExist, getUserName, selectUserById };

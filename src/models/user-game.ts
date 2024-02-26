@@ -1,6 +1,5 @@
-export interface UserGame
-{
-    gameID: string;
-    userId: string;
-    playerIndex: number;
+export interface UserGame {
+  gameID: string;
+  userId: string;
+  playerIndex: number;
 }

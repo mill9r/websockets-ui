@@ -2,7 +2,8 @@ import { isUUIDValid } from '../utils/uuid-generator';
 import {
   Create,
   Read,
-  ReadByName, ReadBySocket,
+  ReadByName,
+  ReadBySocket,
   Update,
 } from '../interfaces/crud.interfaces';
 import { User, UserCreate, UserModel } from '../models';

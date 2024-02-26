@@ -9,7 +9,7 @@ import {
 } from '../interfaces/crud.interfaces';
 import { DaoUserNotExistError } from '../exceptions/dao.exceptions';
 import { Database } from '../simple-db/simple-db';
-import { DB_TABLE } from '../constants/db-table.constant';
+import { DB_TABLE, TABLE_PRIMARY_KEYS } from '../constants/db-table.constant';
 
 const users = new Map<string, User>();
 
@@ -34,11 +34,13 @@ export function userDao(
     },
     create: async (user: UserCreate) => {
       const generatedId = generator();
-      userTable.insert({ id: generatedId, ...user });
+      userTable.insert({ [TABLE_PRIMARY_KEYS.userId]: generatedId, ...user });
       return of(selectUserById(generatedId));
     },
     update: async (id: string, user: UserCreate) => {
-      userTable.update(row => row.id === id, { ...user });
+      userTable.update((row) => row[TABLE_PRIMARY_KEYS.userId] === id, {
+        ...user,
+      });
       return of(selectUserById(id));
     },
   };

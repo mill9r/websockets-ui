@@ -1,18 +1,16 @@
 type Row = Record<string, any>;
 
 class Table {
-  rows: Row[];
+  private rows: Row[] = [];
 
-  constructor() {
-    this.rows = [];
-  }
+  constructor(public name: string) {}
 
-  insert(row: Row) {
+  insert(row: Row): void {
     this.rows.push(row);
   }
 
   update(predicate: (row: Row) => boolean, updates: Partial<Row>) {
-    this.rows.forEach(row => {
+    this.rows.forEach((row) => {
       if (predicate(row)) {
         Object.assign(row, updates);
       }
@@ -43,14 +41,45 @@ class Table {
 }
 
 class Database {
-  static tables: Record<string, Table> = {};
+  static tables: Map<string, Table> = new Map();
 
   static createTable(tableName: string) {
-    this.tables[tableName] = new Table();
+    const table = new Table(tableName);
+    this.tables.set(tableName, table);
+    return table;
   }
 
   static getTable(tableName: string): Table {
-    return this.tables[tableName];
+    const table = this.tables.get(tableName);
+    if (table) {
+      return table;
+    }
+
+    throw new Error(`Table ${tableName} does not exist`);
+  }
+
+  static innerJoin(tables: string[], keys: string[]): Row[] {
+    if (
+      tables.length < 2 ||
+      keys.length < 1 ||
+      tables.length - 1 !== keys.length
+    ) {
+      throw new Error('Invalid number of tables or keys for inner join');
+    }
+
+    let currentJoinResults = this.tables.get(tables[0])?.selectAll() || [];
+    for (let i = 1; i < tables.length; i++) {
+      const nextTableRows = this.tables.get(tables[i])?.selectAll() || [];
+      const joinKey = keys[i - 1];
+
+      currentJoinResults = currentJoinResults.flatMap((rowA) => {
+        return nextTableRows
+          .filter((rowB) => rowA[joinKey] === rowB[joinKey])
+          .map((rowB) => ({ ...rowA, ...rowB }));
+      });
+    }
+
+    return currentJoinResults;
   }
 }
 

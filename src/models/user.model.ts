@@ -1,5 +1,5 @@
 import { ServiceInvalidUserException } from '../exceptions/service.exceptions';
-import WebSocket from 'ws';
+import { TABLE_PRIMARY_KEYS } from '../constants/db-table.constant';
 
 export interface UserCreate {
   name: string;
@@ -7,7 +7,7 @@ export interface UserCreate {
 }
 
 export interface User extends UserCreate {
-  id: string;
+  [TABLE_PRIMARY_KEYS.userId]: string;
 }
 
 export class UserModel {
@@ -18,7 +18,6 @@ export class UserModel {
       throw new ServiceInvalidUserException();
     }
     this.createdUser = { ...user };
-
   }
 
   get user() {

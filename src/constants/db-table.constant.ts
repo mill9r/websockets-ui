@@ -3,4 +3,9 @@ export const DB_TABLE = {
   room: 'room',
   roomUser: 'roomUser',
   winners: 'winners',
+};
+
+export enum TABLE_PRIMARY_KEYS {
+  userId = 'userId',
+  roomId = 'roomId',
 }
