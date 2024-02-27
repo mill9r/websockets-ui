@@ -35,6 +35,7 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     const userCtrl = controllerFactory(ws, wsService).userController;
     const roomCtrl = controllerFactory(ws, wsService).roomController;
+    const gameCtrl = controllerFactory(ws, wsService).gameController;
 
     const msg = parseNestedJson(message);
     console.log(msg);
@@ -50,7 +51,7 @@ wss.on('connection', function connection(ws) {
         .then((data) => data?.getRooms())
         .then((resp) => {
           // @ts-ignore
-          ws.send(JSON.stringify(resp));
+          ws.send(stringifyNestedJson(resp));
         });
     }
 
@@ -58,9 +59,21 @@ wss.on('connection', function connection(ws) {
       roomCtrl()
         .then((data) => data?.createRoom())
         .then((resp) => {
-          const response = JSON.stringify(resp);
-          console.log('sending --> : %s', response);
-          ws.send(response);
+          if(resp) {
+            // TODO guarantee that resp is not null | undefined
+            const response = stringifyNestedJson(resp);
+            console.log('sending --> : %s', response);
+            ws.send(response);
+          }
+        });
+    }
+
+    if(msg.type == 'add_user_to_room') {
+      gameCtrl(msg.data.indexRoom)
+        .then((data) => data?.createGame({roomId: msg.data.indexRoom, userId: msg.data.indexUser}))
+        .then((resp) => {
+          // @ts-ignore
+          ws.send(stringifyNestedJson(resp));
         });
     }
   });

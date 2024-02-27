@@ -9,6 +9,10 @@ class Table {
     this.rows.push(row);
   }
 
+  remove(predicate: (row: Row) => boolean) {
+    this.rows = this.rows.filter((row) => !predicate(row));
+  }
+
   update(predicate: (row: Row) => boolean, updates: Partial<Row>) {
     this.rows.forEach((row) => {
       if (predicate(row)) {

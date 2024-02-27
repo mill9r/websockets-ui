@@ -1,26 +1,19 @@
-import { Create, Read, Update } from '../interfaces/crud.interfaces';
+import { Create, Delete, Read, Update } from '../interfaces/crud.interfaces';
 import { Room } from '../models';
 import WebSocket from 'ws';
 import { generateUUID } from '../utils/uuid-generator';
 import { TABLE_PRIMARY_KEYS } from '../constants/db-table.constant';
-
-const roomMapper = (room: any) => {
-  return {
-    roomId: room.roomId,
-    roomUsers: [
-      JSON.stringify({
-        name: room.name,
-        index: room.userId,
-      }),
-    ],
-  };
-};
+import { RoomStatusEnum } from '../constants/room-status.enum';
+import { roomMapper } from '../utils/room.mapper';
 
 export const roomController = (
-  service: Create<string, Room> & Read<undefined, any[]> & Update<string, Room>,
+  service: Create<string, Room> & Read<undefined, any[]> & Update<{
+    roomId: string,
+    status: RoomStatusEnum
+  },Room>,
   ws: WebSocket,
   webSocketService: Read<WebSocket, string> &
-    Create<{ ws: WebSocket; userId: string }, boolean>,
+    Create<{ ws: WebSocket; userId: string }, boolean>
 ) => {
   return async () => {
     try {
@@ -30,23 +23,27 @@ export const roomController = (
           const userId = await webSocketService.get(ws);
           const updateRoom = await service.update(
             userId,
-            room[TABLE_PRIMARY_KEYS.roomId],
+            {
+              roomId: room[TABLE_PRIMARY_KEYS.roomId],
+              status: RoomStatusEnum.WAITING,
+            }
           );
           const getRoom = await service.get(undefined);
           const respData = getRoom.map(roomMapper);
           return {
             type: 'update_room',
-            data: JSON.stringify(respData),
+            data: respData,
             id: 0,
           };
         },
 
         getRooms: async () => {
           const getRoom = await service.get(undefined);
+          console.log('getRoom', getRoom);
           const respData = getRoom.map(roomMapper);
           return {
             type: 'update_room',
-            data: JSON.stringify(respData),
+            data: respData,
             id: 0,
           };
         },

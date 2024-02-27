@@ -5,8 +5,8 @@ export function parseNestedJson(json: Buffer | ArrayBuffer | Buffer[]) {
 
   const input = JSON.parse(json.toString());
   Object.keys(input).forEach((key) => {
-    if (key === 'data' && typeof input[key] == 'string') {
-      input[key] = parseNestedJson(input[key]);
+    if (key === 'data' && typeof input[key] == 'string' && input[key].length) {
+      input[key] = JSON.parse(input[key]);
     }
   });
 
@@ -20,8 +20,8 @@ export function stringifyNestedJson<T extends { [key: string]: any }>(json: T) {
 
   const input: { [key: string]: any } = { ...json };
   Object.keys(json).forEach((key) => {
-    if (key === 'data' && typeof json[key] == 'object') {
-      input[key] = stringifyNestedJson(input[key]);
+    if (key === 'data') {
+      input[key] = JSON.stringify(input[key]);
     }
   });
 

@@ -9,6 +9,8 @@ import { roomController } from '../controllers/room.controller';
 import { roomDao } from '../dao/room.dao';
 import { websocketService } from '../services/websocket.service';
 import { Create, Read } from '../interfaces/crud.interfaces';
+import { gameController } from '../controllers/game.controller';
+import { gameDao } from '../dao/game.dao';
 
 export const controllerFactory = (
   ws: WebSocket,
@@ -22,4 +24,5 @@ export const controllerFactory = (
     webSocketService,
   ),
   roomController: roomController(roomDao(generateUUID), ws, webSocketService),
+  gameController: gameController(gameDao(generateUUID), ws, webSocketService),
 });
