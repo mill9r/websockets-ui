@@ -7,13 +7,18 @@ import { RoomStatusEnum } from '../constants/room-status.enum';
 import { roomMapper } from '../utils/room.mapper';
 
 export const roomController = (
-  service: Create<string, Room> & Read<undefined, any[]> & Update<{
-    roomId: string,
-    status: RoomStatusEnum
-  },Room>,
+  service: Create<string, Room> &
+    Read<undefined, any[]> &
+    Update<
+      {
+        roomId: string;
+        status: RoomStatusEnum;
+      },
+      Room
+    >,
   ws: WebSocket,
   webSocketService: Read<WebSocket, string> &
-    Create<{ ws: WebSocket; userId: string }, boolean>
+    Create<{ ws: WebSocket; userId: string }, boolean>,
 ) => {
   return async () => {
     try {
@@ -21,13 +26,10 @@ export const roomController = (
         createRoom: async () => {
           const room = await service.create(generateUUID());
           const userId = await webSocketService.get(ws);
-          const updateRoom = await service.update(
-            userId,
-            {
-              roomId: room[TABLE_PRIMARY_KEYS.roomId],
-              status: RoomStatusEnum.WAITING,
-            }
-          );
+          const updateRoom = await service.update(userId, {
+            roomId: room[TABLE_PRIMARY_KEYS.roomId],
+            status: RoomStatusEnum.WAITING,
+          });
           const getRoom = await service.get(undefined);
           const respData = getRoom.map(roomMapper);
           return {

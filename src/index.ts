@@ -59,7 +59,7 @@ wss.on('connection', function connection(ws) {
       roomCtrl()
         .then((data) => data?.createRoom())
         .then((resp) => {
-          if(resp) {
+          if (resp) {
             // TODO guarantee that resp is not null | undefined
             const response = stringifyNestedJson(resp);
             console.log('sending --> : %s', response);
@@ -68,9 +68,14 @@ wss.on('connection', function connection(ws) {
         });
     }
 
-    if(msg.type == 'add_user_to_room') {
+    if (msg.type == 'add_user_to_room') {
       gameCtrl(msg.data.indexRoom)
-        .then((data) => data?.createGame({roomId: msg.data.indexRoom, userId: msg.data.indexUser}))
+        .then((data) =>
+          data?.createGame({
+            roomId: msg.data.indexRoom,
+            userId: msg.data.indexUser,
+          }),
+        )
         .then((resp) => {
           // @ts-ignore
           ws.send(stringifyNestedJson(resp));

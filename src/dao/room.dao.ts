@@ -7,10 +7,15 @@ import * as console from 'console';
 
 export const roomDao = (
   generator: () => string,
-): Create<string, Room> & Read<undefined, any[]> & Update<{
-  roomId: string,
-  status: RoomStatusEnum
-}, Room> => {
+): Create<string, Room> &
+  Read<undefined, any[]> &
+  Update<
+    {
+      roomId: string;
+      status: RoomStatusEnum;
+    },
+    Room
+  > => {
   const roomTable = Database.getTable(DB_TABLE.room);
   const roomUserTable = Database.getTable(DB_TABLE.roomUser);
   return {
@@ -26,11 +31,18 @@ export const roomDao = (
       )[0] as Room;
     },
 
-    update: async (userId: string, payload: {
-      roomId: string,
-      status: RoomStatusEnum
-    }) => {
-      roomUserTable.insert({ userId, roomId: payload.roomId, status: payload.status });
+    update: async (
+      userId: string,
+      payload: {
+        roomId: string;
+        status: RoomStatusEnum;
+      },
+    ) => {
+      roomUserTable.insert({
+        userId,
+        roomId: payload.roomId,
+        status: payload.status,
+      });
       return roomTable.select(
         (row) => row[TABLE_PRIMARY_KEYS.roomId] === payload.roomId,
       )[0] as Room;
